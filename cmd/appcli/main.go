@@ -73,7 +73,7 @@ func main() {
 	)
 
 	// Add flags and prefix all env exposed with AA
-	executor := cli.PrepareMainCmd(rootCmd, "AA", app.DefaultCLIHome)
+	executor := cli.PrepareMainCmd(rootCmd, "NS", app.DefaultCLIHome)
 
 	err := executor.Execute()
 	if err != nil {

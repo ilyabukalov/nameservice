@@ -12,6 +12,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=NameServiceApp \
 
 BUILD_FLAGS := -ldflags '$(ldflags)'
 
+include Makefile.ledger
 all: install
 
 install: go.sum
@@ -23,8 +24,7 @@ go.sum: go.mod
 		GO111MODULE=on go mod verify
 
 # Uncomment when you have some tests
-# test:
-# 	@go test -mod=readonly $(PACKAGES)
+ test: @go test -mod=readonly $(PACKAGES)
 
 # look into .golangci.yml for enabling / disabling linters
 lint:

@@ -72,17 +72,16 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 // AppModule implements an application module for the nameservice module.
 type AppModule struct {
 	AppModuleBasic
-
-	keeper        keeper.Keeper
-	// TODO: Add keepers that your application depends on
+	keeper     Keeper
+	bankKeeper bank.Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, /*TODO: Add Keepers that your application depends on*/) AppModule {
+func NewAppModule(k Keeper, bankKeeper bank.Keeper) AppModule {
 	return AppModule{
-		AppModuleBasic:      AppModuleBasic{},
-		keeper:              k,
-		// TODO: Add keepers that your application depends on
+		AppModuleBasic: AppModuleBasic{},
+		keeper:         k,
+		bankKeeper:     bankKeeper,
 	}
 }
 

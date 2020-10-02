@@ -8,6 +8,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -52,6 +53,7 @@ var (
 		params.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		nameservice.AppModule{}
 		// TODO: Add your module(s) AppModuleBasic
 	)
 
@@ -99,6 +101,7 @@ type NameServiceApp struct {
 	distrKeeper    distr.Keeper
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
+	nsKeeper       nameservice.Keeper
 	// TODO: Add your module(s)
 
 	// Module Manager
@@ -126,7 +129,7 @@ func NewInitApp(
 
 	// TODO: Add the keys that module requires
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
-		supply.StoreKey, distr.StoreKey, slashing.StoreKey, params.StoreKey)
+		supply.StoreKey, distr.StoreKey, slashing.StoreKey, params.StoreKey, nameservice.StoreKey)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -206,6 +209,14 @@ func NewInitApp(
 			app.slashingKeeper.Hooks()),
 	)
 
+	// The NameserviceKeeper is the Keeper from the module for this tutorial
+	// It handles interactions with the namestore
+	app.nsKeeper = nameservice.NewKeeper(
+		app.cdc,
+		keys[nameservice.StoreKey],
+		app.bankKeeper,
+	)
+
 	// TODO: Add your module(s) keepers
 
 	// NOTE: Any module instantiated in the module manager that is later modified
@@ -214,6 +225,7 @@ func NewInitApp(
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
+		nameservice.NewAppModule(app.nsKeeper, app.bankKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		distr.NewAppModule(app.distrKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.accountKeeper, app.stakingKeeper),
@@ -239,6 +251,7 @@ func NewInitApp(
 		bank.ModuleName,
 		slashing.ModuleName,
 		// TODO: Add your module(s)
+		nameservice.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
 	)
@@ -334,3 +347,20 @@ func GetMaccPerms() map[string][]string {
 	}
 	return modAccPerms
 }
+
+func (app *nameServiceApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+	) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
+
+		// as if they could withdraw from the start of the next block
+		ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
+
+		genState := app.mm.ExportGenesis(ctx)
+		appState, err = codec.MarshalJSONIndent(app.cdc, genState)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		validators = staking.WriteValidators(ctx, app.stakingKeeper)
+
+		return appState, validators, nil
+	}
