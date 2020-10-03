@@ -2,12 +2,10 @@ package app
 
 import (
 	"encoding/json"
-	"io"
 	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -26,6 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/ilyabukalov/nameservice/x/nameservice"
 )
 
 const appName = "nameservice"
@@ -53,7 +52,7 @@ var (
 		params.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		nameservice.AppModule{}
+		nameservice.AppModule{},
 		// TODO: Add your module(s) AppModuleBasic
 	)
 
@@ -83,8 +82,6 @@ func MakeCodec() *codec.Codec {
 type NameServiceApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
-
-	invCheckPeriod uint
 
 	// keys to access the substores
 	keys  map[string]*sdk.KVStoreKey
@@ -116,15 +113,14 @@ var _ simapp.App = (*NameServiceApp)(nil)
 
 // NewnameserviceApp is a constructor function for nameserviceApp
 func NewInitApp(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
-	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
+	logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp),
 ) *NameServiceApp {
 	// First define the top level codec that will be shared by the different modules
 	cdc := MakeCodec()
 
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
-	bApp.SetCommitMultiStoreTracer(traceStore)
+
 	bApp.SetAppVersion(version.Version)
 
 	// TODO: Add the keys that module requires
@@ -137,7 +133,6 @@ func NewInitApp(
 	var app = &NameServiceApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
-		invCheckPeriod: invCheckPeriod,
 		keys:           keys,
 		tKeys:          tKeys,
 		subspaces:      make(map[string]params.Subspace),
@@ -277,13 +272,6 @@ func NewInitApp(
 	app.MountKVStores(keys)
 	app.MountTransientStores(tKeys)
 
-	if loadLatest {
-		err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
-		if err != nil {
-			tmos.Exit(err.Error())
-		}
-	}
-
 	return app
 }
 
@@ -348,11 +336,15 @@ func GetMaccPerms() map[string][]string {
 	return modAccPerms
 }
 
-func (app *nameServiceApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+func (app *NameServiceApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 	) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 
 		// as if they could withdraw from the start of the next block
 		ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
+
+		if forZeroHeight {
+			app.prepForZeroHeightGenesis(ctx, jailWhiteList)
+		}
 
 		genState := app.mm.ExportGenesis(ctx)
 		appState, err = codec.MarshalJSONIndent(app.cdc, genState)

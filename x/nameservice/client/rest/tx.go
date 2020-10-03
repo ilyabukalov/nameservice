@@ -1,10 +1,7 @@
 package rest
 // The packages below are commented out at first to prevent an error if this file isn't initially saved.
 import (
-	// "bytes"
 	 "net/http"
-
-	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	 sdk "github.com/cosmos/cosmos-sdk/types"
@@ -132,11 +129,3 @@ func deleteNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
-
-func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	// r.HandleFunc(
-	// TODO: Define the Rest route ,
-	// Call the function which should be executed for this route),
-	// ).Methods("POST")
-}
-

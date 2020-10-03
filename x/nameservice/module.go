@@ -14,7 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/ilyabukalov/nameservice/x/nameservice/client/cli"
 	"github.com/ilyabukalov/nameservice/x/nameservice/client/rest"
-	"github.com/ilyabukalov/nameservice/x/nameservice/keeper"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/ilyabukalov/nameservice/x/nameservice/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -54,7 +55,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // RegisterRESTRoutes registers the REST routes for the nameservice module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr)
+	rest.RegisterRoutes(ctx, rtr, StoreKey)
 }
 
 // GetTxCmd returns the root tx command for the nameservice module.
@@ -110,7 +111,7 @@ func (AppModule) QuerierRoute() string {
 
 // NewQuerierHandler returns the nameservice module sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return types.NewQuerier(am.keeper)
+	return NewQuerier(am.keeper)
 }
 
 // InitGenesis performs genesis initialization for the nameservice module. It returns

@@ -14,11 +14,11 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case MsgSetName:
-			return handleMsgSetName(ctx, keeper, msg)
+			return handleMsgSetName(ctx, k, msg)
 		case MsgBuyName:
-			return handleMsgBuyName(ctx, keeper, msg)
+			return handleMsgBuyName(ctx, k, msg)
 		case MsgDeleteName:
-			return handleMsgDeleteName(ctx, keeper, msg)
+			return handleMsgDeleteName(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName,  msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -72,22 +72,3 @@ func handleMsgSetName(ctx sdk.Context, keeper Keeper, msg MsgSetName) (*sdk.Resu
 	return &sdk.Result{}, nil                // return
 }
 
-
-// handle<Action> does x
-func handleMsg<Action>(ctx sdk.Context, k Keeper, msg Msg<Action>) (*sdk.Result, error) {
-	err := k.<Action>(ctx, msg.ValidatorAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: Define your msg events
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.ValidatorAddr.String()),
-		),
-	)
-
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
-}
