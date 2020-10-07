@@ -40,17 +40,17 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 // DefaultGenesis returns default genesis state as raw bytes for the nameservice
 // module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
+	return types.ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
 // ValidateGenesis performs genesis state validation for the nameservice module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	var data types.GenesisState
+	var data GenesisState
 	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return err
 	}
-	return types.ValidateGenesis(data)
+	return ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the nameservice module.
