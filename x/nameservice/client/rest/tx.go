@@ -10,17 +10,16 @@ import (
 	 "github.com/ilyabukalov/nameservice/x/nameservice/types"
 )
 
-type buyNameReq struct {
+type buyNameRequest struct {
 	BaseReq rest.BaseReq `json:"base_req"`
 	Name    string       `json:"name"`
-	Amount  string       `json:"amount"`
+	Price   string       `json:"price"`
 	Buyer   string       `json:"buyer"`
 }
 
 func buyNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req buyNameReq
-
+		var req buyNameRequest
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
@@ -36,8 +35,8 @@ func buyNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		coins, err := sdk.ParseCoins(req.Price)
 
-		coins, err := sdk.ParseCoins(req.Amount)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -55,16 +54,17 @@ func buyNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-type setNameReq struct {
+
+type setWhoisRequest struct {
 	BaseReq rest.BaseReq `json:"base_req"`
 	Name    string       `json:"name"`
 	Value   string       `json:"value"`
 	Owner   string       `json:"owner"`
 }
 
-func setNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func setWhoisHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req setNameReq
+		var req setWhoisRequest
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
@@ -93,15 +93,15 @@ func setNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-type deleteNameReq struct {
+type deleteWhoisRequest struct {
 	BaseReq rest.BaseReq `json:"base_req"`
 	Name    string       `json:"name"`
 	Owner   string       `json:"owner"`
 }
 
-func deleteNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func deleteWhoisHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req deleteNameReq
+		var req deleteWhoisRequest
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return

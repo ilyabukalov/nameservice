@@ -13,7 +13,7 @@ import (
 func resolveNameHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		paramType := vars[restName]
+		paramType := vars["key"]
 
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/resolve/%s", storeName, paramType), nil)
 		if err != nil {
@@ -25,12 +25,12 @@ func resolveNameHandler(cliCtx context.CLIContext, storeName string) http.Handle
 	}
 }
 
-func whoIsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getWhoisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		paramType := vars[restName]
+		key := vars["key"]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/whois/%s", storeName, paramType), nil)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/get-whois/%s", storeName, key), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -40,9 +40,9 @@ func whoIsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc 
 	}
 }
 
-func namesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func listWhoisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/names", storeName), nil)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/list-whois", storeName), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
