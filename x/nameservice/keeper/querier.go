@@ -27,12 +27,13 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryWhois(ctx, path[1:], req, k)
 		case QueryNames:
 			return queryNames(ctx, req, k)
-		case QueryListWhois:
-		case QueryGetWhois:
-			break;
+		case types.QueryListWhois:
+		case types.QueryGetWhois:
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown nameservice query endpoint")
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown nameservice query endpoint")
 		}
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown nameservice query endpoint")
 	}
 }
 
