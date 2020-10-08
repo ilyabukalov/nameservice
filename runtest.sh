@@ -14,7 +14,7 @@ appcli query nameservice resolve user1.id | jq ".value"
 # > 8.8.8.8
 
 # Try out a whois query against the name you just registered
-appcli query nameservice get-whois user1.id
+appcli query nameservice whois user1.id
 # > {"value":"8.8.8.8","owner":"cosmos1l7k5tdt2qam0zecxrx78yuw447ga54dsmtpk2s","price":[{"denom":"nametoken","amount":"5"}]}
 
 # Alice buys name from user1
@@ -24,5 +24,5 @@ appcli tx nameservice buy-name user1.id 10nametoken --from user2 -y | jq ".txhas
 appcli tx nameservice delete-name user1.id --from user2 -y | jq ".txhash" |  xargs $(sleep 6) appcli q tx
 
 # Try out a whois query against the name you just deleted
-appcli query nameservice get-whois user1.id
+appcli query nameservice whois user1.id
 # > {"value":"","owner":"","price":[{"denom":"nametoken","amount":"1"}]}
