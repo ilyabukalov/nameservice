@@ -19,6 +19,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
@@ -73,7 +74,23 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	return app.NewInitApp(logger, db, baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)))
+	var cache sdk.MultiStorePersistentCache
+
+	if viper.GetBool(server.FlagInterBlockCache) {
+		cache = store.NewCommitKVStoreCacheManager()
+	}
+	pruningOpts, err := server.GetPruningOptionsFromFlags()
+	if err != nil {
+		panic(err)
+	}
+	return app.NewInitApp(
+		logger, db, traceStore, true, invCheckPeriod,
+		baseapp.SetPruning(pruningOpts),
+		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
+		baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
+		baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
+		baseapp.SetInterBlockCache(cache),
+	)
 }
 
 func exportAppStateAndTMValidators(
@@ -81,7 +98,7 @@ func exportAppStateAndTMValidators(
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		aApp := app.NewInitApp(logger, db)
+		aApp := app.NewInitApp(logger, db, traceStore, false, uint(1))
 		err := aApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
@@ -89,7 +106,7 @@ func exportAppStateAndTMValidators(
 		return aApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	aApp := app.NewInitApp(logger, db)
+	aApp := app.NewInitApp(logger, db, traceStore, true, uint(1))
 
 	return aApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }
