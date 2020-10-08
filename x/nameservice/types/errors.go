@@ -7,6 +7,6 @@ import (
 // TODO: Fill out some custom errors for the module
 // You can see how they are constructed below:
 var (
-	ErrInvalid = sdkerrors.Register(ModuleName, 1, "custom error message")
-	ErrNameDoesNotExist = sdkerrors.Register(ModuleName, 1, "name does not exist")
+	ErrInvalid = sdkerrors.Register(ModuleName, 2, "custom error message")
+	ErrNameDoesNotExist = sdkerrors.Register(ModuleName, 3, "name does not exist")
 )
