@@ -13,11 +13,11 @@ func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case MsgSetName:
+		case types.MsgSetName:
 			return handleMsgSetName(ctx, k, msg)
-		case MsgBuyName:
+		case types.MsgBuyName:
 			return handleMsgBuyName(ctx, k, msg)
-		case MsgDeleteName:
+		case types.MsgDeleteName:
 			return handleMsgDeleteName(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName,  msg)
@@ -27,7 +27,7 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 // Handle a message to delete name
-func handleMsgDeleteName(ctx sdk.Context, keeper Keeper, msg MsgDeleteName) (*sdk.Result, error) {
+func handleMsgDeleteName(ctx sdk.Context, keeper Keeper, msg types.MsgDeleteName) (*sdk.Result, error) {
 	if !keeper.IsNamePresent(ctx, msg.Name) {
 		return nil, sdkerrors.Wrap(types.ErrNameDoesNotExist, msg.Name)
 	}
@@ -41,7 +41,7 @@ func handleMsgDeleteName(ctx sdk.Context, keeper Keeper, msg MsgDeleteName) (*sd
 
 
 // Handle a message to buy name
-func handleMsgBuyName(ctx sdk.Context, keeper Keeper, msg MsgBuyName) (*sdk.Result, error) {
+func handleMsgBuyName(ctx sdk.Context, keeper Keeper, msg types.MsgBuyName) (*sdk.Result, error) {
 	// Checks if the the bid price is greater than the price paid by the current owner
 	if keeper.GetPrice(ctx, msg.Name).IsAllGT(msg.Bid) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "Bid not high enough") // If not, throw an error
@@ -64,7 +64,7 @@ func handleMsgBuyName(ctx sdk.Context, keeper Keeper, msg MsgBuyName) (*sdk.Resu
 
 
 // Handle a message to set name
-func handleMsgSetName(ctx sdk.Context, keeper Keeper, msg MsgSetName) (*sdk.Result, error) {
+func handleMsgSetName(ctx sdk.Context, keeper Keeper, msg types.MsgSetName) (*sdk.Result, error) {
 	if !msg.Owner.Equals(keeper.GetOwner(ctx, msg.Name)) { // Checks if the the msg sender is the same as the current owner
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "Incorrect Owner") // If not, throw an error
 	}
