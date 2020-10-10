@@ -30,7 +30,7 @@ func getWhoisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFu
 		vars := mux.Vars(r)
 		key := vars["key"]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/get-whois/%s", storeName, key), nil)
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/whois/%s", storeName, key), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return

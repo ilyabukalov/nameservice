@@ -3,7 +3,6 @@ package types
 import "strings"
 
 const QueryListWhois = "list-whois"
-const QueryGetWhois = "get-whois"
 
 // QueryResResolve Queries Result Payload for a resolve query
 type QueryResResolve struct {
