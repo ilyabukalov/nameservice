@@ -26,3 +26,6 @@ appcli tx nameservice delete-name user1.id --from user2 -y | jq ".txhash" |  xar
 # Try out a whois query against the name you just deleted
 appcli query nameservice whois user1.id
 # > {"value":"","owner":"","price":[{"denom":"nametoken","amount":"1"}]}
+
+# to check transaction
+appcli q tx <txhash>
